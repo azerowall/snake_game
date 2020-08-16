@@ -79,6 +79,19 @@ impl Snake {
         self.body.front().unwrap()
     }
 
+    pub fn is_overlap_tail(&self, x: u32, y: u32) -> bool {
+        for p in self.body.iter().skip(1) {
+            if p.x == x && p.y == y {
+                return true;
+            }
+        }
+        false
+    }
+
+    pub fn is_overlap(&self, x: u32, y: u32) -> bool {
+        self.head().x == x && self.head().y == y || self.is_overlap_tail(x, y)
+    }
+
     pub fn render(&self, context: &Context, gl: &mut GlGraphics) {
         for p in &self.body {
             draw_block(p.x, p.y, self.color, context, gl);

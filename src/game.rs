@@ -27,8 +27,8 @@ impl Game {
         Self {
             rng: rand::thread_rng(),
             bg_color: [0.0, 0.0, 0.0, 1.0],
-            width: 18,
-            height: 18,
+            width: 19,
+            height: 19,
             food_color: [1.0, 0.0, 0.0, 1.0],
             food: (1,1).into(),
             snake: Snake::new(2, 2, 3, SNAKE_COLOR, Direction::Right),
@@ -36,8 +36,14 @@ impl Game {
     }
 
     pub fn new_food(&mut self) {
-        self.food.x = self.rng.gen::<u32>() % (self.width - 1) + 1;
-        self.food.y = self.rng.gen::<u32>() % (self.height - 1) + 1;
+        loop {
+            self.food.x = self.rng.gen::<u32>() % (self.width - 1) + 1;
+            self.food.y = self.rng.gen::<u32>() % (self.height - 1) + 1;
+
+            if !self.snake.is_overlap(self.food.x, self.food.y) {
+                break;
+            }
+        }
     }
 
     pub fn render(&mut self, context: &Context, gl: &mut GlGraphics) {
@@ -63,9 +69,17 @@ impl Game {
         let head = self.snake.head();
         if head.x == 0 || head.x == self.width ||
             head.y == 0 || head.y == self.height {
-            self.snake = Snake::new(2, 2, 3, SNAKE_COLOR, Direction::Right);
-            self.new_food();
+            self.restart();
+            return;
         }
+        if self.snake.is_overlap_tail(head.x, head.y) {
+            self.restart();
+        }
+    }
+
+    pub fn restart(&mut self) {
+        self.snake = Snake::new(2, 2, 3, SNAKE_COLOR, Direction::Right);
+        self.new_food();
     }
 
     pub fn button_pressed(&mut self, btn: &Button) {
